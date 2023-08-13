@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+  id            Int          @default(autoincrement()) @id
+  name          String?
+  email         String?      @unique
+  createdAt     DateTime     @default(now()) @map(name: "created_at")
+  updatedAt     DateTime     @updatedAt @map(name: "updated_at")
+  expenses      Expense[]
+  contexts      Context[]
+  @@map(name: "users")
+}
+
+model Expense {
+  id      Int      @id @default(autoincrement())
+  amount  Float
+  reason  String
+  label   Label?   @relation(fields: [labelId], references: [id])
+  labelId Int?
+  user    User     @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model Label {
+  id      Int      @id @default(autoincrement())
+  name    String
+  expenses Expense[]
+}
+
+model Context {
+  id           Int       @id @default(autoincrement())
+  googleSheetId String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  userId       Int
+}

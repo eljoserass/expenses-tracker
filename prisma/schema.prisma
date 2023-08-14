@@ -32,6 +32,7 @@ model Label {
   transactions Transaction[]
 }
 
+
 model Context {
   id           Int       @id @default(autoincrement())
   googleSheetId String    @unique

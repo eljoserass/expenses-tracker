@@ -17,17 +17,11 @@ export default async function handle(req, res) {
   const session = await getSession({ req });
 
   const result = await prisma.transaction.create({
-
     data: {
-
       amount: amount,
-
       reason: reason,
-
       label: {connect: {id: labelId}},
-
       user: { connect: { email: session?.user?.email }}
-
     },
 
   });

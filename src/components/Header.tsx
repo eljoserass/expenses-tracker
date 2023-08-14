@@ -51,11 +51,13 @@ const Header: React.FC = () => {
   if (session) {
     left = (
       <Box>
-        <Link data-active={isActive('/')} href="/">
-          💸
-        </Link>
+        <Text size={"lg"}>
+          <Link data-active={isActive('/')} href="/">
+            💸
+          </Link>
+        </Text>
       </Box>
-    );
+    )
     right = (
       <HStack>
           <Text>
@@ -69,7 +71,7 @@ const Header: React.FC = () => {
               variant='outline'
             />
           <MenuList>
-            <MenuItem as='a' href='/expenses' >See Expenses</MenuItem>
+            <MenuItem as='a' href='/transactions' >See transactions</MenuItem>
             <MenuItem onClick={() => signOut()}>Log Out</MenuItem>
           </MenuList>
         </Menu>

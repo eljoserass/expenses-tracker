@@ -15,24 +15,28 @@ const Header: React.FC = () => {
 
   let left = (
     <Box>
-      <Link data-active={isActive('/')} href="/">
-        💸
-      </Link>
-      </Box>
+      <Text fontSize={"4xl"}>
+        <Link data-active={isActive('/')} href="/">
+          💸
+        </Link>
+      </Text>
+    </Box>
   );
 
   let right = null;
 
   if (status === 'loading') {
     left = (
-      <div className="left">
-        <Link data-active={isActive('/')} href="/">
-          💸
-        </Link>
-      </div>
+      <Box padding={3}>
+        <Text fontSize={"4xl"}>
+          <Link data-active={isActive('/')} href="/">
+            💸
+          </Link>
+        </Text>
+      </Box>
     );
     right = (
-      <Box>
+      <Box padding={3}>
         <Text>Validating session ...</Text>
       </Box>
     );
@@ -40,18 +44,20 @@ const Header: React.FC = () => {
 
   if (!session) {
     right = (
-      <Button colorScheme='whatsapp'>
-        <Link data-active={isActive('/signup')} href="/api/auth/signin">
-         Login
-        </Link>
-      </Button>
+      <Box padding={5}>
+        <Text color="green.400" as="u">
+          <Link data-active={isActive('/signup')} href="/api/auth/signin">
+            Login
+          </Link>
+        </Text>
+      </Box>
     );
   }
 
   if (session) {
     left = (
-      <Box>
-        <Text size={"lg"}>
+      <Box padding={3}>
+        <Text fontSize={"4xl"}>
           <Link data-active={isActive('/')} href="/">
             💸
           </Link>
@@ -60,19 +66,24 @@ const Header: React.FC = () => {
     )
     right = (
       <HStack>
-          <Text>
-            {session.user.name}
-          </Text>
+          <Box>
+            <Text as='b'>
+              {session.user.name}
+            </Text>
+          </Box>
+
         <Menu>
+          <Box padding={3}>
           <MenuButton
               as={IconButton}
               aria-label='Options'
               icon={<HamburgerIcon />}
               variant='outline'
             />
+          </Box>
           <MenuList>
             <MenuItem as='a' href='/transactions' >See transactions</MenuItem>
-            <MenuItem onClick={() => signOut()}>Log Out</MenuItem>
+            <MenuItem textColor={"tomato"} onClick={() => signOut()}>Log Out</MenuItem>
           </MenuList>
         </Menu>
       </HStack>

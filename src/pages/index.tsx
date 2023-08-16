@@ -1,70 +1,58 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Layout from "../components/Layout"
-import { HStack, Text ,Container,VStack, Select ,Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Textarea, Flex, Spacer, AbsoluteCenter, Box, Center, Button, useToast } from "@chakra-ui/react"
+import { HStack, Text ,Container,VStack, Select ,Input, FormErrorMessage, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Textarea, Flex, Spacer, AbsoluteCenter, Box, Center, Button, useToast, FormControl } from "@chakra-ui/react"
 import { useSession } from "next-auth/react";
 import Router from 'next/router';
+import { Form, Formik, Field} from "formik";
 
 
 
 export default function Home() {
 
-  const [amount, setAmount] = useState(0.0);
+  const [isSuccess, setisSuccess] = useState(true)
+  const validateAmount = (value) => {
+    let error = ""
+    if (!value) {
+      error = "amount is required"
+    } else if (isNaN(value) === true) {
+      error = "amount must be a number"
+    } else if (Number(value) === 0) {
+      error = "amount should be different than 0"
+    }
+    return (error)
+  }
 
-  const [reason, setReason] = useState("");
+  const validateReason = (value) => {
 
-  const [labelId, setLabelId] = useState(-1)
+  }
+
+  const validateLabel = (value) => {
+
+  }
 
   const toast = useToast()
 
-  const submitData = async (e: React.SyntheticEvent) => {
-    
-    e.preventDefault();
+  const submitData = async ({amount, reason, label, actions}) => {
   
-    if (amount <= 0.1 || labelId === -1) {
-      toast({
-        title: 'Expense Could not be created',
-        description: "Enter amount or Label",
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-      })
-      return
-    }
-    try {
+      const body = { amount, reason, label };
       
-      const body = { amount, reason, labelId };
-  
-      const res = await fetch('/api/transactions', {
+      fetch('/api/transactions', {
   
         method: 'POST',
   
         headers: { 'Content-Type': 'application/json' },
   
         body: JSON.stringify(body),
-  
-      });
-  
-      await Router.push('/');
-      toast({
-        title: 'Expense Created',
-        description: "Expense Added in the database",
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
+        
+      }).then(() => {
+        setisSuccess(true)
+       
+      }).catch(() => {
+        setisSuccess(false)
+
       })
-  
-    } catch (error) {
-      toast({
-        title: 'Expense Could not be created',
-        description: "server reason: " + error,
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-      })
-      console.error(error);
-      alert(error)
-    }
-  
+      
+      
   };
 
   const { data: session, status } = useSession(); 
@@ -72,34 +60,77 @@ export default function Home() {
     <Layout>
     { session ? 
     <Container paddingStart={5}>
-      <VStack p={3} spacing={3}>
-        <HStack>
-          <NumberInput onChange={(e) => {setAmount(Number(e))}} variant={"filled"} defaultValue={0.0} precision={2} step={0.1}>
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-          <Select onChange={(e) => {setLabelId(Number(e))}} variant='filled' placeholder='Label' >
-              <option value={0}>Mansion</option>
-              <option value={1}>Mobility</option>
-              <option value={2}>Meals</option>
-              <option value={3}>Income</option>
-          </Select>
-        </HStack>
-        <Box borderRadius='md' w='90%'>
-          <Textarea value={reason} onChange={(e) => {
-            let inputValue = e.target.value
-            setReason(inputValue)
-          }} size={"sm"} resize={"vertical"} variant="filled" placeholder='Reason of the expense' />
-        </Box>
-        <Box>
-          <Button onClick={submitData}>
-            Submit
-          </Button>
-        </Box>
-      </VStack>
+      <Formik 
+        initialValues={{amount: 0.00, reason: "", label: "Label"}}
+        onSubmit={(values, actions) => {
+            
+            setTimeout (() => {
+              submitData({amount: values.amount, reason: values.reason, label: values.label, actions: actions})
+              actions.setSubmitting(false)
+              toast({
+                title: 'Transaction Added',
+                description: "",
+                status: 'success',
+                duration: 9000,
+                isClosable: true,
+              })
+            }, 2000)
+
+            
+        }}
+      >
+      {(props) => (
+        <Form>
+        <VStack p={3} spacing={3}>
+          <HStack>
+            <Field name="amount" validate={validateAmount}>
+            {({ field, form }) => (
+              <FormControl isInvalid={form.errors.amount && form.touched.amount}>
+                <NumberInput variant={"filled"} precision={2} step={0.1}>
+                  <NumberInputField  placeholder="amount" {...field} />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+              </FormControl>
+            )}
+            </Field>
+            
+            <Field name="label" validate={validateLabel}>
+            {({ field, form }) => (
+              <FormControl isInvalid={form.errors.label && form.touched.label}>
+                <Select variant='filled' placeholder='label' {...field}>
+                  <option value="Mansion">Mansion</option>
+                  <option value="Mobility">Mobility</option>
+                  <option value="Meals">Meals</option>
+                  <option value="Income">Income</option>
+                </Select>
+                <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+              </FormControl>
+              )}
+            </Field>
+          </HStack>
+          <Box borderRadius='md' w='90%'>
+            <Field name="reason" validate={validateReason}>
+            {({ field, form }) => (
+              <FormControl isInvalid={form.errors.reason && form.touched.reason}>
+              <Textarea  resize={"vertical"} variant="filled" placeholder='reason' {...field}/>
+              <FormErrorMessage>{form.errors.reason}</FormErrorMessage>
+              </FormControl>
+            )}
+            </Field>
+          </Box>
+          <Box>
+            <Button isLoading={props.isSubmitting} mt={"4"} type="submit">
+              Submit
+            </Button>
+          </Box>
+        </VStack>
+        </Form>
+      )}
+      </Formik>
       </Container>:
       <Container>
         <Center>Login to use features</Center>
